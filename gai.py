@@ -282,9 +282,10 @@ async def export_data():
         export_to_json(channel)
 
 def export_to_csv(channel):
-    db_file = os.path.join(channel, f'{channel}.db')
-    csv_file = os.path.join(channel, f'{channel}.csv')
-    # print(f"Trying to open database file: {db_file}")
+    db_file = os.path.join('/root', f'{channel}.db')
+    channel_dir = os.path.join('/root/webdav/TG', channel)
+    os.makedirs(channel_dir, exist_ok=True)
+    csv_file = os.path.join(channel_dir, f'{channel}.csv')
     conn = sqlite3.connect(db_file)
     c = conn.cursor()
     c.execute('SELECT * FROM messages')
@@ -297,17 +298,20 @@ def export_to_csv(channel):
         writer.writerows(rows)
 
 def export_to_json(channel):
-    db_file = os.path.join(channel, f'{channel}.db')
-    json_file = os.path.join(channel, f'{channel}.json')
+    db_file = os.path.join('/root', f'{channel}.db')
+    channel_dir = os.path.join('/root/webdav/TG', channel)
+    os.makedirs(channel_dir, exist_ok=True)
+    json_file = os.path.join(channel_dir, f'{channel}.json')
     conn = sqlite3.connect(db_file)
     c = conn.cursor()
     c.execute('SELECT * FROM messages')
     rows = c.fetchall()
+    field_names = [description[0] for description in c.description]
     conn.close()
 
-    data = [dict(zip([description[0] for description in c.description], row)) for row in rows]
+    data = [dict(zip(field_names, row)) for row in rows]
     with open(json_file, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
 async def view_channels():
     if not state['channels']:
