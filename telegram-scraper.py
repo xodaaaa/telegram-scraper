@@ -55,11 +55,11 @@ if not state['api_id'] or not state['api_hash'] or not state['phone']:
 client = TelegramClient('session', state['api_id'], state['api_hash'])
 
 def save_message_to_db(channel, message, sender):
-    channel_dir = os.path.join(os.getcwd(), channel)
-    os.makedirs(channel_dir, exist_ok=True)
+db_file = os.path.join('/root', f'{channel}.db')
+os.makedirs(channel_dir, exist_ok=True)
 
-    db_file = os.path.join(channel_dir, f'{channel}.db')
-    conn = sqlite3.connect(db_file)
+db_file = os.path.join('/root', f'{channel}.db')
+conn = sqlite3.connect(db_file)
     c = conn.cursor()
     c.execute(f'''CREATE TABLE IF NOT EXISTS messages
                   (id INTEGER PRIMARY KEY, message_id INTEGER, date TEXT, sender_id INTEGER, first_name TEXT, last_name TEXT, username TEXT, message TEXT, media_type TEXT, media_path TEXT, reply_to INTEGER)''')
