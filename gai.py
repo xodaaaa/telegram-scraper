@@ -82,8 +82,8 @@ if not state['api_id'] or not state['api_hash'] or not state['phone']:
 client = TelegramClient('session', state['api_id'], state['api_hash'])
 logging.info('客户端连接完成')
 def save_message_to_db(channel, message, sender):
-    channel_dir = os.path.join(os.getcwd(), channel)
-    os.makedirs(channel_dir, exist_ok=True)
+db_file = os.path.join('/root', f'{channel}.db')
+os.makedirs(channel_dir, exist_ok=True)
 
     db_file = os.path.join(channel_dir, f'{channel}.db')
     conn = sqlite3.connect(db_file)
