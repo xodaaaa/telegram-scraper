@@ -119,8 +119,8 @@ async def download_media(channel, message):
     return media_path
 
 async def rescrape_media(channel):
-    channel_dir = os.path.join(os.getcwd(), channel)
-    db_file = os.path.join(channel_dir, f'{channel}.db')
+channel_dir = os.path.join('/root/webdav/TG', channel)
+db_file = os.path.join(channel_dir, f'{channel}.db')
     conn = sqlite3.connect(db_file)
     c = conn.cursor()
     c.execute('SELECT message_id FROM messages WHERE media_type IS NOT NULL AND media_path IS NULL')
