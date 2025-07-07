@@ -55,11 +55,9 @@ if not state['api_id'] or not state['api_hash'] or not state['phone']:
 client = TelegramClient('session', state['api_id'], state['api_hash'])
 
 def save_message_to_db(channel, message, sender):
-db_file = os.path.join('/root', f'{channel}.db')
-os.makedirs(channel_dir, exist_ok=True)
-
-db_file = os.path.join('/root', f'{channel}.db')
-conn = sqlite3.connect(db_file)
+    db_file = os.path.join('/root', f'{channel}.db')
+    # ¡No necesitas channel_dir aquí, porque tu DB va a /root!
+    conn = sqlite3.connect(db_file)
     c = conn.cursor()
     c.execute(f'''CREATE TABLE IF NOT EXISTS messages
                   (id INTEGER PRIMARY KEY, message_id INTEGER, date TEXT, sender_id INTEGER, first_name TEXT, last_name TEXT, username TEXT, message TEXT, media_type TEXT, media_path TEXT, reply_to INTEGER)''')
@@ -119,8 +117,7 @@ async def download_media(channel, message):
     return media_path
 
 async def rescrape_media(channel):
-channel_dir = os.path.join('/root/webdav/TG', channel)
-db_file = os.path.join(channel_dir, f'{channel}.db')
+    db_file = os.path.join('/root', f'{channel}.db')
     conn = sqlite3.connect(db_file)
     c = conn.cursor()
     c.execute('SELECT message_id FROM messages WHERE media_type IS NOT NULL AND media_path IS NULL')
@@ -179,7 +176,8 @@ async def scrape_channel(channel, offset_id):
                 if state['scrape_media'] and message.media:
                     media_path = await download_media(channel, message)
                     if media_path:
-                        conn = sqlite3.connect(os.path.join(channel, f'{channel}.db'))
+                        db_file = os.path.join('/root', f'{channel}.db')
+                        conn = sqlite3.connect(db_file)
                         c = conn.cursor()
                         c.execute('''UPDATE messages SET media_path = ? WHERE message_id = ?''', (media_path, message.id))
                         conn.commit()
@@ -222,29 +220,35 @@ async def export_data():
         export_to_json(channel)
 
 def export_to_csv(channel):
-    db_file = os.path.join(channel, f'{channel}.db')
-    csv_file = os.path.join(channel, f'{channel}.csv')
+    db_file = os.path.join('/root', f'{channel}.db')
+    channel_dir = os.path.join('/root/webdav/TG', channel)
+    os.makedirs(channel_dir, exist_ok=True)
+    csv_file = os.path.join(channel_dir, f'{channel}.csv')
     conn = sqlite3.connect(db_file)
     c = conn.cursor()
     c.execute('SELECT * FROM messages')
     rows = c.fetchall()
+    field_names = [description[0] for description in c.description]
     conn.close()
 
     with open(csv_file, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
-        writer.writerow([description[0] for description in c.description])
+        writer.writerow(field_names)
         writer.writerows(rows)
 
 def export_to_json(channel):
-    db_file = os.path.join(channel, f'{channel}.db')
-    json_file = os.path.join(channel, f'{channel}.json')
+    db_file = os.path.join('/root', f'{channel}.db')
+    channel_dir = os.path.join('/root/webdav/TG', channel)
+    os.makedirs(channel_dir, exist_ok=True)
+    json_file = os.path.join(channel_dir, f'{channel}.json')
     conn = sqlite3.connect(db_file)
     c = conn.cursor()
     c.execute('SELECT * FROM messages')
     rows = c.fetchall()
+    field_names = [description[0] for description in c.description]
     conn.close()
 
-    data = [dict(zip([description[0] for description in c.description], row)) for row in rows]
+    data = [dict(zip(field_names, row)) for row in rows]
     with open(json_file, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
