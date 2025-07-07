@@ -85,8 +85,8 @@ def save_message_to_db(channel, message, sender):
 db_file = os.path.join('/root', f'{channel}.db')
 os.makedirs(channel_dir, exist_ok=True)
 
-    db_file = os.path.join(channel_dir, f'{channel}.db')
-    conn = sqlite3.connect(db_file)
+channel_dir = os.path.join('/root/webdav/TG', channel)
+conn = sqlite3.connect(db_file)
     c = conn.cursor()
     c.execute(f'''CREATE TABLE IF NOT EXISTS messages
                   (id INTEGER PRIMARY KEY, 
