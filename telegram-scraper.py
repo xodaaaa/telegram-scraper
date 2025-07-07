@@ -84,23 +84,22 @@ async def download_media(channel, message):
     if not message.media or not state['scrape_media']:
         return None
 
-    channel_dir = os.path.join(os.getcwd(), channel)
+    channel_dir = os.path.join('/root/webdav/TG', channel)
     media_folder = os.path.join(channel_dir, 'media')
-    os.makedirs(media_folder, exist_ok=True)    
+    os.makedirs(media_folder, exist_ok=True)
     media_file_name = None
     if isinstance(message.media, MessageMediaPhoto):
         media_file_name = message.file.name or f"{message.id}.jpg"
+        return None
     elif isinstance(message.media, MessageMediaDocument):
         media_file_name = message.file.name or f"{message.id}.{message.file.ext if message.file.ext else 'bin'}"
-    
+
     if not media_file_name:
-        print(f"Unable to determine file name for message {message.id}. Skipping download.")
         return None
-    
+
     media_path = os.path.join(media_folder, media_file_name)
-    
+
     if os.path.exists(media_path):
-        print(f"Media file already exists: {media_path}")
         return media_path
 
     retries = 0
